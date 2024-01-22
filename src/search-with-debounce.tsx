@@ -1,7 +1,6 @@
 //похожая задача в Тинькофф: вывести список героев, сделать поиск, сделать дебаунс
 
 import {
-    ReactEventHandler,
     useCallback,
     useEffect,
     useRef,
@@ -36,7 +35,7 @@ function App() {
     };
 
     const searchPostsByName = useDebounce(
-        (e: ReactEventHandler<HTMLInputElement>) => {
+        (e: any) => {
             const name = e.target.value;
             fetch(`https://jsonplaceholder.typicode.com/posts?title_like=${name}`)
                 .then((res) => res.json())
