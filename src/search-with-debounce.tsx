@@ -1,27 +1,24 @@
 //похожая задача в Тинькофф: вывести список героев, сделать поиск, сделать дебаунс
 
-import {
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
-import React from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 
 function App() {
     const [posts, setPosts] = useState([]);
 
     useEffect(() => {
-        fetch("https://jsonplaceholder.typicode.com/posts")
-            .then((res) => res.json())
-            .then((data) => setPosts(data));
+        const fetchPosts = async () => {
+            const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+            const data = await response.json();
+            setPosts(data);
+        };
+        fetchPosts();
     }, []);
 
-    const useDebounce = (callback: (...args: any[]) => void, delay: number) => {
+    const useDebounce = (callback, delay) => {
         const debounceRef = useRef();
 
-        return useCallback((...args: any[]) => {
+        return useCallback((...args) => {
             if (debounceRef.current) {
                 clearTimeout(debounceRef.current);
             }
@@ -29,18 +26,19 @@ function App() {
             debounceRef.current = setTimeout(() => {
                 callback(...args);
             }, delay);
-        },
-            [delay, callback],
-        );
+        }, [delay, callback]);
     };
 
-    const searchPostsByName = useDebounce(
-        (e: any) => {
-            const name = e.target.value;
-            fetch(`https://jsonplaceholder.typicode.com/posts?title_like=${name}`)
-                .then((res) => res.json())
-                .then((data) => setPosts(data));
-        }, 500);
+    const searchPostsByName = useDebounce(async (e) => {
+        const name = e.target.value;
+        const response = await fetch(`https://jsonplaceholder.typicode.com/posts?title_like=${name}`);
+        const data = await response.json();
+        setPosts(data);
+    }, 500);
+
+    const handleDeletePost = useCallback((postId) => {
+        setPosts(posts.filter(post => post.id !== postId));
+    }, [posts]);
 
     return (
         <div>
@@ -48,7 +46,10 @@ function App() {
             <ul>
                 <h3>Posts</h3>
                 {posts.map((post) => (
-                    <li key={post.id}>{post.title}</li>
+                    <li key={post.id}>
+                        {post.title}
+                        <button onClick={() => handleDeletePost(post.id)}>Delete</button>
+                    </li>
                 ))}
             </ul>
         </div>
